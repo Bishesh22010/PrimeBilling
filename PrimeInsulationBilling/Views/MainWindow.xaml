@@ -98,7 +98,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Description of Goods" Foreground="#666666" VerticalAlignment="Center"/>
-                                <TextBox x:Name="txtDescription" Padding="8" Height="50" AcceptsReturn="True" ToolTip="Enter description of goods" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1"/>
+                                <TextBox x:Name="txtDescription" Padding="8"  AcceptsReturn="True" ToolTip="Enter description of goods" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1"/>
                             </Grid>
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
@@ -129,11 +129,10 @@
                                     <ColumnDefinition Width="200"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Packing Details (4 Lines)" Foreground="#666666" VerticalAlignment="Center"/>
+                                <TextBlock Text="Packing Details" Foreground="#666666" VerticalAlignment="Center"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBox x:Name="txtPacking1" Padding="8" Margin="0,0,0,2" ToolTip="Packing Line 1" BorderBrush="#007ACC" MaxWidth="400"/>
                                     <TextBox x:Name="txtPacking2" Padding="8" Margin="0,2" ToolTip="Packing Line 2" BorderBrush="#007ACC" MaxWidth="400"/>
-                                    <TextBox x:Name="txtPacking3" Padding="8" Margin="0,2" ToolTip="Packing Line 3" BorderBrush="#007ACC" MaxWidth="400"/>
                                     <TextBox x:Name="txtPacking4" Padding="8" Margin="0,2,0,0" ToolTip="Packing Line 4" BorderBrush="#007ACC" MaxWidth="400"/>
                                 </StackPanel>
                             </Grid>
@@ -215,6 +214,7 @@
                                 <TextBlock Text="Final Amount (R/OFF)" Foreground="#666666" VerticalAlignment="Center"/>
                                 <!-- R/OFF is now editable -->
                                 <TextBox x:Name="txtRoff" Padding="8" ToolTip="Manually enter the final rounded amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" LostFocus="txtRoff_LostFocus"/>
+                                
                             </Grid>
 
                             <Grid Margin="0,5">
@@ -223,7 +223,26 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Amount in Words" Foreground="#666666" VerticalAlignment="Center"/>
-                                <TextBox x:Name="txtAmountInWords" Padding="8" Height="50" AcceptsReturn="True" ToolTip="This is generated automatically from the R/OFF amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" IsReadOnly="True" Background="#EEEEEE"/>
+                                <TextBox x:Name="txtAmountInWords" Padding="8"  AcceptsReturn="True" ToolTip="This is generated automatically from the R/OFF amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" IsReadOnly="True" Background="#EEEEEE"/>
+                                
+                            </Grid>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Add this to MainWindow.xaml -->
+                            <TextBlock Text="Declaration" Foreground="#666666" VerticalAlignment="Center"/>
+                                <TextBox x:Name="txtDeclaration"
+                                     Padding="8"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     ToolTip="Enter the declaration text for the invoice"
+                                     BorderBrush="#007ACC"
+                                     MaxWidth="400" 
+                                     Grid.Column="1" 
+                                     /> 
                             </Grid>
                         </StackPanel>
                     </GroupBox>

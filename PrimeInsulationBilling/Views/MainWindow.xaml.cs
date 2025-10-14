@@ -160,7 +160,6 @@ namespace PrimeInsulationBilling.Views
                     { "description_of_goods", txtDescription.Text },
                     { "packing1", txtPacking1.Text },
                     { "packing2", txtPacking2.Text },
-                    { "packing3", txtPacking3.Text },
                     { "packing4", txtPacking4.Text },
                     { "hsn_code", txtHsnCode.Text },
                     { "quantity", txtQuantity.Text },
@@ -170,7 +169,8 @@ namespace PrimeInsulationBilling.Views
                     { "cgst", txtCgst.Text },
                     { "sgst", txtSgst.Text },
                     { "igst", txtIgst.Text },
-                    { "roff", txtRoff.Text }
+                    { "roff", txtRoff.Text },
+                    { "declaration", txtDeclaration.Text }
                 };
 
                 string templateName = cmbTemplates.SelectedItem.ToString();

@@ -36,7 +36,6 @@ namespace PrimeInsulationBilling
                 worksheet.Cells["B31"].Value = data["description_of_goods"];
                 worksheet.Cells["E31"].Value = data.ContainsKey("packing1") ? data["packing1"] : "";
                 worksheet.Cells["E32"].Value = data.ContainsKey("packing2") ? data["packing2"] : "";
-                worksheet.Cells["E33"].Value = data.ContainsKey("packing3") ? data["packing3"] : "";
                 worksheet.Cells["E34"].Value = data.ContainsKey("packing4") ? data["packing4"] : "";
                 worksheet.Cells["F31"].Value = data["hsn_code"];
                 if (decimal.TryParse(data["quantity"], out decimal quantity)) worksheet.Cells["G31"].Value = quantity;
@@ -68,7 +67,7 @@ namespace PrimeInsulationBilling
                     worksheet.Cells["J54"].Value = roff;
                 }
 
-                worksheet.Cells["A56"].Value = "We Declare that this invoice shows the actual price of goods described and that all particulars are true and correct.";
+                worksheet.Cells["A56"].Value = data["declaration"];
                 package.SaveAs(new FileInfo(newFilePath));
             }
             return newFilePath;
