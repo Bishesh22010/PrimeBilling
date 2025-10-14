@@ -17,12 +17,6 @@ namespace PrimeInsulationBilling
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
-        /// <summary>
-        /// Creates a new bill by populating an Excel template with data.
-        /// </summary>
-        /// <param name="templatePath">The full path to the .xlsx template file.</param>
-        /// <param name="data">A dictionary containing the data to insert.</param>
-        /// <returns>The file path of the newly created bill.</returns>
         public string CreateBill(string templatePath, Dictionary<string, string> data)
         {
             // The license is now set globally by the static constructor,
