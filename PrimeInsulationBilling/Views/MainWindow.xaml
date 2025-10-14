@@ -143,8 +143,80 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Amount" Foreground="#666666" VerticalAlignment="Center"/>
-                                <TextBox x:Name="txtAmount" Padding="8" ToolTip="Enter total amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1"/>
+                                <TextBox x:Name="txtAmount" Padding="8" ToolTip="Enter total amount before tax" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" TextChanged="Calculation_TextChanged"/>
                             </Grid>
+
+                            <!-- GST Slab Section -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Taxes (%)" Foreground="#666666" VerticalAlignment="Top"/>
+
+                                <StackPanel Grid.Column="1">
+                                    <!-- CGST -->
+                                    <TextBlock Text="CGST (%)"
+                   Foreground="#333333"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,2"/>
+                                    <TextBox x:Name="txtCgst"
+                 Padding="8"
+                 Margin="0,0,0,6"
+                 ToolTip="Enter CGST Percentage"
+                 BorderBrush="#007ACC"
+                 MaxWidth="400"
+                 TextChanged="Calculation_TextChanged"/>
+
+                                    <!-- SGST -->
+                                    <TextBlock Text="SGST (%)"
+                   Foreground="#333333"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,2"/>
+                                    <TextBox x:Name="txtSgst"
+                 Padding="8"
+                 Margin="0,0,0,6"
+                 ToolTip="Enter SGST Percentage"
+                 BorderBrush="#007ACC"
+                 MaxWidth="400"
+                 TextChanged="Calculation_TextChanged"/>
+
+                                    <!-- IGST -->
+                                    <TextBlock Text="IGST (%)"
+                   Foreground="#333333"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,2"/>
+                                    <TextBox x:Name="txtIgst"
+                 Padding="8"
+                 Margin="0,0,0,0"
+                 ToolTip="Enter IGST Percentage"
+                 BorderBrush="#007ACC"
+                 MaxWidth="400"
+                 TextChanged="Calculation_TextChanged"/>
+                                </StackPanel>
+                            </Grid>
+
+
+                            <!-- Grand Total Display Label -->
+                            <Border Background="#E3F2FD" CornerRadius="5" Padding="15" Margin="0,15,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Calculated Grand Total: " FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="lblGrandTotal" Text="₹ 0.00" FontSize="20" FontWeight="Bold" Foreground="#0D47A1" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- R/OFF Label -->
+                                <TextBlock Text="Final Amount (R/OFF)" Foreground="#666666" VerticalAlignment="Center"/>
+                                <!-- R/OFF is now editable -->
+                                <TextBox x:Name="txtRoff" Padding="8" ToolTip="Manually enter the final rounded amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" LostFocus="txtRoff_LostFocus"/>
+                            </Grid>
+
                             <Grid Margin="0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="200"/>
@@ -152,28 +224,6 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Amount in Words" Foreground="#666666" VerticalAlignment="Center"/>
                                 <TextBox x:Name="txtAmountInWords" Padding="8" Height="50" AcceptsReturn="True" ToolTip="This is generated automatically from the R/OFF amount" BorderBrush="#007ACC" MaxWidth="400" Grid.Column="1" IsReadOnly="True" Background="#EEEEEE"/>
-                            </Grid>
-                            <Grid Margin="0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="200"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Taxes &amp; Final Total" Foreground="#666666" VerticalAlignment="Center"/>
-                                <Grid Grid.Column="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtCgst" Padding="8" ToolTip="CGST" BorderBrush="#007ACC" />
-                                    <TextBox x:Name="txtSgst" Padding="8" ToolTip="SGST" BorderBrush="#007ACC" Grid.Column="2"/>
-                                    <TextBox x:Name="txtIgst" Padding="8" ToolTip="IGST" BorderBrush="#007ACC" Grid.Column="4"/>
-                                    <TextBox x:Name="txtRoff" Padding="8" ToolTip="R/OFF" BorderBrush="#007ACC" MaxWidth="100" Grid.Column="6" LostFocus="txtRoff_LostFocus"/>
-                                </Grid>
                             </Grid>
                         </StackPanel>
                     </GroupBox>

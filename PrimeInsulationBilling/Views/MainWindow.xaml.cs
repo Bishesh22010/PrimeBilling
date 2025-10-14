@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +17,7 @@ namespace PrimeInsulationBilling.Views
         public MainWindow()
         {
             InitializeComponent();
+            WindowState = WindowState.Maximized;
         }
 
         /// <summary>
@@ -92,18 +94,36 @@ namespace PrimeInsulationBilling.Views
             // This method is required by the XAML but does not need any code for now.
             // You can add logic here in the future if you want things to adapt to window size.
         }
+        private void Calculation_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            decimal.TryParse(txtAmount.Text, out decimal baseAmount);
+            decimal.TryParse(txtCgst.Text, out decimal cgstPercent);
+            decimal.TryParse(txtSgst.Text, out decimal sgstPercent);
+            decimal.TryParse(txtIgst.Text, out decimal igstPercent);
+
+            decimal cgstAmount = baseAmount * (cgstPercent / 100);
+            decimal sgstAmount = baseAmount * (sgstPercent / 100);
+            decimal igstAmount = baseAmount * (igstPercent / 100);
+
+            decimal grandTotal = baseAmount + cgstAmount + sgstAmount + igstAmount;
+
+            // ONLY update the grand total label.
+            lblGrandTotal.Text = grandTotal.ToString("C", new CultureInfo("en-IN"));
+        }
+
+        /// <summary>
+        /// Generates the "Amount in Words" based on the manually entered R/OFF value.
+        /// </summary>
         private void txtRoff_LostFocus(object sender, RoutedEventArgs e)
         {
-            // This method is called when the user clicks away from the R/OFF textbox
             if (decimal.TryParse(txtRoff.Text, out decimal amount))
             {
-                // Convert the number to words and update the read-only textbox
+                // Convert the manually entered number to words.
                 txtAmountInWords.Text = NumberToWordsConverter.ToIndianCurrencyWords(amount);
             }
             else
             {
-                // Clear the words if the input is not a valid number
-                txtAmountInWords.Text = "";
+                txtAmountInWords.Text = ""; // Clear if input is not a valid number.
             }
         }
         /// <summary>

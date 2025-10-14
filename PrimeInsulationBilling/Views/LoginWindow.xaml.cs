@@ -25,7 +25,9 @@ namespace PrimeInsulationBilling.Views
             {
                 // If login is successful, open the main application window
                 MainWindow mainWindow = new MainWindow();
+
                 mainWindow.Show();
+
 
                 // Close the current login window
                 this.Close();
