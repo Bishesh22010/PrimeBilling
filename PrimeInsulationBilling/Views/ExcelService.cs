@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml; // You must have the EPPlus NuGet package installed
+﻿using OfficeOpenXml;
+using PrimeInsulationBilling.Services; // Add this line to use the converter
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,11 +8,6 @@ namespace PrimeInsulationBilling
 {
     public class ExcelService
     {
-        // =================================================================
-        //  THE GUARANTEED FIX: A Static Constructor
-        //  This special constructor runs only ONCE when the application first
-        //  needs to use ExcelService, ensuring the license is set globally.
-        // =================================================================
         static ExcelService()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -19,45 +15,63 @@ namespace PrimeInsulationBilling
 
         public string CreateBill(string templatePath, Dictionary<string, string> data)
         {
-            // The license is now set globally by the static constructor,
-            // so we no longer need the line here.
-
             FileInfo templateFile = new FileInfo(templatePath);
-
-            // Define the name and path for the new, generated bill
             string newFileName = $"Bill-{data["invoice_number"]}-{DateTime.Now:yyyy-MM-dd}.xlsx";
             string generatedBillsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedBills");
-
-            // Ensure the output directory exists. If not, create it.
             Directory.CreateDirectory(generatedBillsDirectory);
-
             string newFilePath = Path.Combine(generatedBillsDirectory, newFileName);
 
-            // Create a new Excel package from the template
             using (ExcelPackage package = new ExcelPackage(templateFile))
             {
-                // Get the first worksheet in the workbook
                 ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
 
-                // --- Place Data into Specific Cells ---
-                // This is where you map your dictionary data to the cells in your template.
-                // It's important that these cell addresses match your .xlsx file exactly.
+                // --- HEADER SECTION ---
                 worksheet.Cells["F14"].Value = data["invoice_number"] + "/25-26";
                 worksheet.Cells["H14"].Value = DateTime.Parse(data["invoice_date"]).ToString("dd.MM.yyyy");
                 worksheet.Cells["F18"].Value = data["e_way_bill"];
+                worksheet.Cells["F26"].Value = data["lr_number"];
                 worksheet.Cells["H26"].Value = data["vehicle_no"];
 
-                // Safely parse the total amount to a decimal before setting the value
-                if (decimal.TryParse(data["total_amount"], out decimal amount))
+                // --- ITEM DETAILS SECTION ---
+                worksheet.Cells["B31"].Value = data["description_of_goods"];
+                worksheet.Cells["E31"].Value = data.ContainsKey("packing1") ? data["packing1"] : "";
+                worksheet.Cells["E32"].Value = data.ContainsKey("packing2") ? data["packing2"] : "";
+                worksheet.Cells["E33"].Value = data.ContainsKey("packing3") ? data["packing3"] : "";
+                worksheet.Cells["E34"].Value = data.ContainsKey("packing4") ? data["packing4"] : "";
+                worksheet.Cells["F31"].Value = data["hsn_code"];
+                if (decimal.TryParse(data["quantity"], out decimal quantity)) worksheet.Cells["G31"].Value = quantity;
+                if (decimal.TryParse(data["rate"], out decimal rate)) worksheet.Cells["H31"].Value = rate;
+                if (decimal.TryParse(data["total_amount"], out decimal amount)) worksheet.Cells["J31"].Value = amount;
+
+                // --- FOOTER SECTION ---
+                worksheet.Cells["A42"].Value = "Indian Rupees: " + data["amount_in_words"];
+
+                // --- GST & TOTALS - THE FIX IS HERE ---
+                // We parse the percentage, divide by 100, and then set the cell's format.
+                if (decimal.TryParse(data["cgst"], out decimal cgst))
                 {
-                    worksheet.Cells["J31"].Value = amount;
+                    worksheet.Cells["G45"].Value = cgst / 100;
+                    worksheet.Cells["G45"].Style.Numberformat.Format = "0.00%";
+                }
+                if (decimal.TryParse(data["sgst"], out decimal sgst))
+                {
+                    worksheet.Cells["G48"].Value = sgst / 100;
+                    worksheet.Cells["G48"].Style.Numberformat.Format = "0.00%";
+                }
+                if (decimal.TryParse(data["igst"], out decimal igst))
+                {
+                    worksheet.Cells["G51"].Value = igst / 100;
+                    worksheet.Cells["G51"].Style.Numberformat.Format = "0.00%";
+                }
+                if (decimal.TryParse(data["roff"], out decimal roff))
+                {
+                    worksheet.Cells["J54"].Value = roff;
                 }
 
+                worksheet.Cells["A56"].Value = "We Declare that this invoice shows the actual price of goods described and that all particulars are true and correct.";
+                package.SaveAs(new FileInfo(newFilePath));
             }
-
-            // Return the full path of the newly created file
             return newFilePath;
         }
     }
 }
-

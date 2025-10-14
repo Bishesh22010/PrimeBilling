@@ -1,8 +1,10 @@
-﻿using System;
+﻿using PrimeInsulationBilling.Services;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace PrimeInsulationBilling.Views
 {
@@ -14,45 +16,51 @@ namespace PrimeInsulationBilling.Views
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            // This method runs when the window is first opened
-            LoadTemplatesIntoComboBox();
+        /// <summary>
+        /// This method runs once the window has finished loading.
+        /// It's the perfect place to initialize the form.
+        /// </summary>
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadTemplates();
             dpInvoiceDate.SelectedDate = DateTime.Now; // Set today's date by default
         }
 
-        // Scans the 'Templates' folder and populates the dropdown list
-        private void LoadTemplatesIntoComboBox()
+        /// <summary>
+        /// Finds all .xlsx files in the Templates folder and populates the ComboBox.
+        /// </summary>
+        private void LoadTemplates()
         {
             try
             {
-                // Define the directory where templates are stored
                 string templateDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates");
 
-                if (Directory.Exists(templateDirectory))
+                if (!Directory.Exists(templateDirectory))
                 {
-                    // Get all files ending with .xlsx
-                    var templates = Directory.GetFiles(templateDirectory, "*.xlsx");
-
-                    // Add each file name to the ComboBox
-                    foreach (var template in templates)
-                    {
-                        cmbTemplates.Items.Add(Path.GetFileName(template));
-                    }
-
-                    // If templates were found, select the first one by default
-                    if (cmbTemplates.Items.Count > 0)
-                    {
-                        cmbTemplates.SelectedIndex = 0;
-                    }
-                    else
-                    {
-                        lblStatus.Text = "No templates found in the 'Templates' folder.";
-                    }
+                    MessageBox.Show("The 'Templates' folder could not be found. Please create it next to the application .exe and add your .xlsx files.", "Folder Missing", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
-                else
+
+                var templates = Directory.GetFiles(templateDirectory, "*.xlsx");
+
+                // Clear any existing items except the placeholder
+                while (cmbTemplates.Items.Count > 1)
                 {
-                    lblStatus.Text = "Error: 'Templates' folder not found.";
-                    MessageBox.Show("The 'Templates' folder could not be found. Please create it and add your .xlsx files.", "Folder Missing", MessageBoxButton.OK, MessageBoxImage.Error);
+                    cmbTemplates.Items.RemoveAt(1);
+                }
+
+                foreach (var template in templates)
+                {
+                    cmbTemplates.Items.Add(Path.GetFileName(template));
+                }
+
+                cmbTemplates.SelectedIndex = 0; // Default to "Choose a template..."
+
+                if (cmbTemplates.Items.Count <= 1)
+                {
+                    lblStatus.Text = "No templates found in the 'Templates' folder.";
                 }
             }
             catch (Exception ex)
@@ -61,56 +69,109 @@ namespace PrimeInsulationBilling.Views
             }
         }
 
-        // Handles the click event for the "Generate and Open Bill" button
+        /// <summary>
+        /// Handles the selection change event for the template ComboBox.
+        /// </summary>
+        private void cmbTemplates_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbTemplates.SelectedIndex <= 0) // "Choose a template..." is selected
+            {
+                lblStatus.Text = "Please select a valid template.";
+            }
+            else if (cmbTemplates.SelectedItem != null)
+            {
+                lblStatus.Text = $"Template '{cmbTemplates.SelectedItem}' selected. Ready.";
+            }
+        }
+
+        /// <summary>
+        /// Handles the window resize event. Currently not used but required by the XAML.
+        /// </summary>
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // This method is required by the XAML but does not need any code for now.
+            // You can add logic here in the future if you want things to adapt to window size.
+        }
+        private void txtRoff_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // This method is called when the user clicks away from the R/OFF textbox
+            if (decimal.TryParse(txtRoff.Text, out decimal amount))
+            {
+                // Convert the number to words and update the read-only textbox
+                txtAmountInWords.Text = NumberToWordsConverter.ToIndianCurrencyWords(amount);
+            }
+            else
+            {
+                // Clear the words if the input is not a valid number
+                txtAmountInWords.Text = "";
+            }
+        }
+        /// <summary>
+        /// The main event handler for the "Generate and Open Bill" button.
+        /// </summary>
         private void GenerateBillButton_Click(object sender, RoutedEventArgs e)
         {
-            // --- 1. Validate Input ---
-            if (cmbTemplates.SelectedItem == null)
+            // --- Step 1: Validation ---
+            if (cmbTemplates.SelectedIndex <= 0)
             {
-                MessageBox.Show("Please select a bill template from the dropdown list.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select a valid bill template.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (string.IsNullOrWhiteSpace(txtInvoiceNumber.Text))
+
+            // You can add more validation here, for example:
+            if (string.IsNullOrWhiteSpace(txtInvoiceNumber.Text) || dpInvoiceDate.SelectedDate == null)
             {
-                MessageBox.Show("Please enter an Invoice Number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Invoice Number and Date are required fields.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                lblStatus.Text = "Generating bill, please wait...";
+                lblStatus.Text = "Generating bill...";
 
-                // --- 2. Gather Data from the UI ---
+                // --- Step 2: Gather All Data from the Form ---
                 var billData = new Dictionary<string, string>
                 {
                     { "invoice_number", txtInvoiceNumber.Text },
-                    { "e_way_bill", txtEWayBill.Text },
-                    { "vehicle_no", txtVehicleNo.Text },
                     { "invoice_date", dpInvoiceDate.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd") },
-                    { "total_amount", txtTotalAmount.Text }
-                    // Add other key-value pairs for any other fields you add
+                    { "e_way_bill", txtEWayBill.Text },
+                    { "lr_number", txtLrNumber.Text },
+                    { "vehicle_no", txtVehicleNo.Text },
+                    { "description_of_goods", txtDescription.Text },
+                    { "packing1", txtPacking1.Text },
+                    { "packing2", txtPacking2.Text },
+                    { "packing3", txtPacking3.Text },
+                    { "packing4", txtPacking4.Text },
+                    { "hsn_code", txtHsnCode.Text },
+                    { "quantity", txtQuantity.Text },
+                    { "rate", txtRate.Text },
+                    { "total_amount", txtAmount.Text },
+                    { "amount_in_words", txtAmountInWords.Text },
+                    { "cgst", txtCgst.Text },
+                    { "sgst", txtSgst.Text },
+                    { "igst", txtIgst.Text },
+                    { "roff", txtRoff.Text }
                 };
 
                 string templateName = cmbTemplates.SelectedItem.ToString();
                 string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", templateName);
 
-                // --- 3. Call the Excel Service to Create the Bill ---
+                // --- Step 3: Call the Excel Service to Create the Bill ---
                 ExcelService excelService = new ExcelService();
                 string generatedFilePath = excelService.CreateBill(templatePath, billData);
 
-                // --- 4. Open the Generated File ---
-                // UseShellExecute is crucial for opening the file with its default program (e.g., Excel)
-                var process = new Process
+                // --- Step 4: Open the Generated File ---
+                var p = new Process
                 {
                     StartInfo = new ProcessStartInfo(generatedFilePath)
                     {
-                        UseShellExecute = true
+                        UseShellExecute = true // This uses the default program (Excel) to open the file
                     }
                 };
-                process.Start();
+                p.Start();
 
                 lblStatus.Text = $"Successfully generated: {Path.GetFileName(generatedFilePath)}";
-                MessageBox.Show("Bill has been generated and opened successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Bill generated and opened successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -120,3 +181,4 @@ namespace PrimeInsulationBilling.Views
         }
     }
 }
+
