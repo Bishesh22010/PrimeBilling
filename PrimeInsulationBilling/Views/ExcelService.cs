@@ -7,6 +7,16 @@ namespace PrimeInsulationBilling
 {
     public class ExcelService
     {
+        // =================================================================
+        //  THE GUARANTEED FIX: A Static Constructor
+        //  This special constructor runs only ONCE when the application first
+        //  needs to use ExcelService, ensuring the license is set globally.
+        // =================================================================
+        static ExcelService()
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        }
+
         /// <summary>
         /// Creates a new bill by populating an Excel template with data.
         /// </summary>
@@ -15,8 +25,8 @@ namespace PrimeInsulationBilling
         /// <returns>The file path of the newly created bill.</returns>
         public string CreateBill(string templatePath, Dictionary<string, string> data)
         {
-            // Set the license context for EPPlus
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            // The license is now set globally by the static constructor,
+            // so we no longer need the line here.
 
             FileInfo templateFile = new FileInfo(templatePath);
 
@@ -49,11 +59,6 @@ namespace PrimeInsulationBilling
                     worksheet.Cells["J31"].Value = amount;
                 }
 
-                // Add more lines here for any other data you need to insert.
-                // For example: worksheet.Cells["A1"].Value = data["customer_name"];
-
-                // Save the new file to the 'GeneratedBills' directory
-                package.SaveAs(new FileInfo(newFilePath));
             }
 
             // Return the full path of the newly created file
@@ -61,3 +66,4 @@ namespace PrimeInsulationBilling
         }
     }
 }
+
