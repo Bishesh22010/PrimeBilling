@@ -38,7 +38,7 @@ namespace PrimeInsulationBilling
                 worksheet.Cells["E32"].Value = data.ContainsKey("packing2") ? data["packing2"] : "";
                 worksheet.Cells["E34"].Value = data.ContainsKey("packing4") ? data["packing4"] : "";
                 worksheet.Cells["F31"].Value = data["hsn_code"];
-                if (decimal.TryParse(data["quantity"], out decimal quantity)) worksheet.Cells["G31"].Value = quantity;
+                worksheet.Cells["G31"].Value = data["quantity"];
                 if (decimal.TryParse(data["rate"], out decimal rate)) worksheet.Cells["H31"].Value = rate;
                 if (decimal.TryParse(data["total_amount"], out decimal amount)) worksheet.Cells["J31"].Value = amount;
 
