@@ -1,0 +1,147 @@
+﻿<UserControl x:Class="PrimeInsulationBilling.Views.CreateBillView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             Background="#F4F7FC" Loaded="UserControl_Loaded">
+
+    <!-- This contains your entire form, designed to fit inside the MainWindow -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Text="Create New Bill" Grid.Row="0"
+                   FontSize="32" FontWeight="SemiBold" Foreground="#1A3C6E" Margin="30,0,30,20"/>
+
+        <!-- Main Form Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="30,0,30,20">
+            <StackPanel>
+                <!-- Template Selection -->
+                <GroupBox Header="Select Bill Template" Foreground="#1A3C6E" Padding="15">
+                    <ComboBox x:Name="cmbTemplates" Padding="8" FontSize="14" SelectionChanged="cmbTemplates_SelectionChanged">
+                        <ComboBoxItem IsEnabled="False" IsSelected="True">Choose a template...</ComboBoxItem>
+                    </ComboBox>
+                </GroupBox>
+
+                <!-- Details Groups -->
+                <GroupBox Header="Invoice &amp; Transport Details" Foreground="#1A3C6E" Padding="15" Margin="0,15,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Invoice Number" Grid.Row="0" Grid.Column="0" Foreground="#666666" VerticalAlignment="Center" Margin="0,5"/>
+                        <TextBox x:Name="txtInvoiceNumber" Grid.Row="0" Grid.Column="1" Padding="8" ToolTip="Enter the invoice number" BorderBrush="#007ACC" Margin="0,5"/>
+
+                        <TextBlock Text="Invoice Date" Grid.Row="1" Grid.Column="0" Foreground="#666666" VerticalAlignment="Center" Margin="0,5"/>
+                        <DatePicker x:Name="dpInvoiceDate" Grid.Row="1" Grid.Column="1" Padding="6" ToolTip="Select the invoice date" BorderBrush="#007ACC" Margin="0,5"/>
+
+                        <TextBlock Text="E-Way Bill Number" Grid.Row="2" Grid.Column="0" Foreground="#666666" VerticalAlignment="Center" Margin="0,5"/>
+                        <TextBox x:Name="txtEWayBill" Grid.Row="2" Grid.Column="1" Padding="8" ToolTip="Enter the E-Way bill number" BorderBrush="#007ACC" Margin="0,5"/>
+
+                        <TextBlock Text="LR Number" Grid.Row="3" Grid.Column="0" Foreground="#666666" VerticalAlignment="Center" Margin="0,5"/>
+                        <TextBox x:Name="txtLrNumber" Grid.Row="3" Grid.Column="1" Padding="8" ToolTip="Enter the LR number" BorderBrush="#007ACC" Margin="0,5"/>
+
+                        <TextBlock Text="Vehicle Number" Grid.Row="4" Grid.Column="0" Foreground="#666666" VerticalAlignment="Center" Margin="0,5"/>
+                        <TextBox x:Name="txtVehicleNo" Grid.Row="4" Grid.Column="1" Padding="8" ToolTip="Enter the vehicle number" BorderBrush="#007ACC" Margin="0,5"/>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Item &amp; Financial Details" Foreground="#1A3C6E" Padding="15" Margin="0,15,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Description of Goods" Foreground="#666666" Margin="0,5,0,5"/>
+                        <TextBox x:Name="txtDescription" Padding="8" Height="50" AcceptsReturn="True" ToolTip="Enter description of goods" BorderBrush="#007ACC"/>
+
+                        <TextBlock Text="Packing Details (4 Lines)" Foreground="#666666" Margin="0,15,0,5"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="txtPacking1" Padding="8" ToolTip="Packing Line 1" BorderBrush="#007ACC"/>
+                            <TextBox x:Name="txtPacking2" Grid.Column="2" Padding="8" ToolTip="Packing Line 2" BorderBrush="#007ACC"/>
+                            <TextBox x:Name="txtPacking3" Grid.Column="4" Padding="8" ToolTip="Packing Line 3" BorderBrush="#007ACC"/>
+                            <TextBox x:Name="txtPacking4" Grid.Column="6" Padding="8" ToolTip="Packing Line 4" BorderBrush="#007ACC"/>
+                        </Grid>
+
+                        <Grid Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="HSN Code" Foreground="#666666" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtHsnCode" Padding="8" ToolTip="Enter HSN code" BorderBrush="#007ACC"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Quantity" Foreground="#666666" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtQuantity" Padding="8" ToolTip="Enter quantity" BorderBrush="#007ACC"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Rate" Foreground="#666666" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtRate" Padding="8" ToolTip="Enter rate" BorderBrush="#007ACC"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Amount (before tax)" Foreground="#666666" Margin="0,15,0,5"/>
+                        <TextBox x:Name="txtAmount" Padding="8" ToolTip="Enter total amount" BorderBrush="#007ACC" TextChanged="Calculation_TextChanged"/>
+
+                        <TextBlock Text="Taxes (%)" Foreground="#666666" Margin="0,15,0,5"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="txtCgst" Padding="8" ToolTip="CGST" BorderBrush="#007ACC" TextChanged="Calculation_TextChanged"/>
+                            <TextBox x:Name="txtSgst" Grid.Column="2" Padding="8" ToolTip="SGST" BorderBrush="#007ACC" TextChanged="Calculation_TextChanged"/>
+                            <TextBox x:Name="txtIgst" Grid.Column="4" Padding="8" ToolTip="IGST" BorderBrush="#007ACC" TextChanged="Calculation_TextChanged"/>
+                        </Grid>
+
+                        <Border Background="#E3F2FD" CornerRadius="5" Padding="15" Margin="0,20">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Calculated Grand Total: " FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblGrandTotal" Text="₹ 0.00" FontSize="20" FontWeight="Bold" Foreground="#0D47A1" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Final Amount (R/OFF)" Foreground="#666666" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtRoff" Padding="8" ToolTip="Manually enter the final rounded amount" BorderBrush="#007ACC" LostFocus="txtRoff_LostFocus"/>
+
+                        <TextBlock Text="Amount in Words" Foreground="#666666" Margin="0,15,0,5"/>
+                        <TextBox x:Name="txtAmountInWords" Padding="8" Height="50" AcceptsReturn="True" ToolTip="This is generated automatically from the R/OFF amount" IsReadOnly="True" Background="#EEEEEE"/>
+
+                        <TextBlock Text="Declaration" Foreground="#666666" Margin="0,15, 0,5"/>
+                        <TextBox x:Name="txtDeclaration"
+                                 Padding="8" Height="70" AcceptsReturn="True" TextWrapping="Wrap"
+                                 ToolTip="Enter the declaration text for the invoice" BorderBrush="#007ACC"
+                                 Text="We Declare that this invoice shows the actual price of goods described and that all particulars are true and correct."/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
+

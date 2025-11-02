@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq; // Added for LINQ queries
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input; // Added for MouseDoubleClick
 
 namespace PrimeInsulationBilling.Views
 {
@@ -14,6 +16,9 @@ namespace PrimeInsulationBilling.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Path to the directory where bills are saved
+        private readonly string generatedBillsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedBills");
+
         public MainWindow()
         {
             InitializeComponent();
@@ -22,7 +27,6 @@ namespace PrimeInsulationBilling.Views
 
         /// <summary>
         /// This method runs once the window has finished loading.
-        /// It's the perfect place to initialize the form.
         /// </summary>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -31,8 +35,47 @@ namespace PrimeInsulationBilling.Views
         }
 
         /// <summary>
-        /// Finds all .xlsx files in the Templates folder and populates the ComboBox.
+        /// Handles the window resize event.
         /// </summary>
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // This method is required by the XAML but does not need any code for now.
+        }
+
+        // ===================================================================
+        // NAVIGATION LOGIC
+        // ===================================================================
+
+        private void CreateBillNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Show the Create Bill page
+            CreateBillGrid.Visibility = Visibility.Visible;
+            BottomBar.Visibility = Visibility.Visible; // Show the "Generate" button bar
+
+            // Hide the View Bills page
+            ViewBillsGrid.Visibility = Visibility.Collapsed;
+
+            lblStatus.Text = "Ready to create a new bill.";
+        }
+
+        private void ViewBillsNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Show the View Bills page
+            ViewBillsGrid.Visibility = Visibility.Visible;
+
+            // Hide the Create Bill page
+            CreateBillGrid.Visibility = Visibility.Collapsed;
+            BottomBar.Visibility = Visibility.Collapsed; // Hide the "Generate" button bar
+
+            // Load the bills every time we switch to this page
+            LoadBills();
+            lblStatus.Text = "Viewing generated bills.";
+        }
+
+        // ===================================================================
+        // CREATE BILL LOGIC (Your existing methods)
+        // ===================================================================
+
         private void LoadTemplates()
         {
             try
@@ -71,9 +114,6 @@ namespace PrimeInsulationBilling.Views
             }
         }
 
-        /// <summary>
-        /// Handles the selection change event for the template ComboBox.
-        /// </summary>
         private void cmbTemplates_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cmbTemplates.SelectedIndex <= 0) // "Choose a template..." is selected
@@ -86,16 +126,11 @@ namespace PrimeInsulationBilling.Views
             }
         }
 
-        /// <summary>
-        /// Handles the window resize event. Currently not used but required by the XAML.
-        /// </summary>
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // This method is required by the XAML but does not need any code for now.
-            // You can add logic here in the future if you want things to adapt to window size.
-        }
         private void Calculation_TextChanged(object sender, TextChangedEventArgs e)
         {
+            // Check if UI controls are loaded
+            if (lblGrandTotal == null) return;
+
             decimal.TryParse(txtAmount.Text, out decimal baseAmount);
             decimal.TryParse(txtCgst.Text, out decimal cgstPercent);
             decimal.TryParse(txtSgst.Text, out decimal sgstPercent);
@@ -111,9 +146,6 @@ namespace PrimeInsulationBilling.Views
             lblGrandTotal.Text = grandTotal.ToString("C", new CultureInfo("en-IN"));
         }
 
-        /// <summary>
-        /// Generates the "Amount in Words" based on the manually entered R/OFF value.
-        /// </summary>
         private void txtRoff_LostFocus(object sender, RoutedEventArgs e)
         {
             if (decimal.TryParse(txtRoff.Text, out decimal amount))
@@ -126,9 +158,7 @@ namespace PrimeInsulationBilling.Views
                 txtAmountInWords.Text = ""; // Clear if input is not a valid number.
             }
         }
-        /// <summary>
-        /// The main event handler for the "Generate and Open Bill" button.
-        /// </summary>
+
         private void GenerateBillButton_Click(object sender, RoutedEventArgs e)
         {
             // --- Step 1: Validation ---
@@ -138,7 +168,6 @@ namespace PrimeInsulationBilling.Views
                 return;
             }
 
-            // You can add more validation here, for example:
             if (string.IsNullOrWhiteSpace(txtInvoiceNumber.Text) || dpInvoiceDate.SelectedDate == null)
             {
                 MessageBox.Show("Invoice Number and Date are required fields.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -173,7 +202,9 @@ namespace PrimeInsulationBilling.Views
                     { "declaration", txtDeclaration.Text }
                 };
 
-                string templateName = cmbTemplates.SelectedItem.ToString();
+                // FIX: Added '!' (null-forgiving operator) to satisfy compiler.
+                // We know this is safe because of the 'SelectedIndex <= 0' check above.
+                string templateName = cmbTemplates.SelectedItem.ToString()!;
                 string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", templateName);
 
                 // --- Step 3: Call the Excel Service to Create the Bill ---
@@ -199,6 +230,88 @@ namespace PrimeInsulationBilling.Views
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        // ===================================================================
+        // NEW: VIEW BILLS LOGIC
+        // ===================================================================
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadBills();
+        }
+
+        private void LoadBills()
+        {
+            try
+            {
+                // Ensure the directory exists
+                if (!Directory.Exists(generatedBillsDirectory))
+                {
+                    Directory.CreateDirectory(generatedBillsDirectory);
+                }
+
+                // Get all Excel files from the directory
+                var billFiles = Directory.GetFiles(generatedBillsDirectory, "*.xlsx")
+                                         .Select(filePath => new BillFile
+                                         {
+                                             FileName = Path.GetFileName(filePath),
+                                             FullPath = filePath,
+                                             DateCreated = File.GetCreationTime(filePath)
+                                         })
+                                         .OrderByDescending(f => f.DateCreated) // Show newest first
+                                         .ToList();
+
+                BillsListView.ItemsSource = billFiles;
+                lblBillCount.Text = $"Total Bills: {billFiles.Count}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading bills: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenSelectedBill();
+        }
+
+        private void BillsListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            OpenSelectedBill();
+        }
+
+        private void OpenSelectedBill()
+        {
+            // Check if an item is selected
+            if (BillsListView.SelectedItem is BillFile selectedBill)
+            {
+                try
+                {
+                    // Open the file using the system's default application (Excel)
+                    var p = new Process
+                    {
+                        // FIX: Added null check on FullPath
+                        StartInfo = new ProcessStartInfo(selectedBill.FullPath ?? "")
+                        {
+                            UseShellExecute = true
+                        }
+                    };
+                    p.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Could not open file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a bill from the list to open.", "No Bill Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        //
+        // *** THE DUPLICATE BillFile CLASS DEFINITION WAS HERE AND IS NOW REMOVED ***
+        //
     }
 }
 
